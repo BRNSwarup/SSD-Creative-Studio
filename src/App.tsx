@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { getSiteContent, getServices, getPortfolio, getClients } from './lib/supabase';
 import { ServiceItem, PortfolioItem, ClientItem, SiteContent } from './types';
 import { INITIAL_SITE_CONTENT } from './data/initialData';
@@ -12,10 +12,12 @@ import { WhyUs } from './components/WhyUs';
 import { Clients } from './components/Clients';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
-import { AdminModal } from './components/AdminModal';
-import { VideoModal } from './components/VideoModal';
-import { ImageModal } from './components/ImageModal';
 import { motion } from 'framer-motion';
+
+// Code-split modals for faster initial load & zero unnecessary DOM overhead
+const AdminModal = lazy(() => import('./components/AdminModal').then(m => ({ default: m.AdminModal })));
+const VideoModal = lazy(() => import('./components/VideoModal').then(m => ({ default: m.VideoModal })));
+const ImageModal = lazy(() => import('./components/ImageModal').then(m => ({ default: m.ImageModal })));
 
 export function App() {
   const [content, setContent] = useState<SiteContent>(INITIAL_SITE_CONTENT);
@@ -45,7 +47,7 @@ export function App() {
   // Contact preset service
   const [selectedServicePreset, setSelectedServicePreset] = useState<string>('');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [siteContentData, svcData, portData, clientData] = await Promise.all([
         getSiteContent(),
@@ -62,41 +64,57 @@ export function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
-  const handleSelectService = (serviceName: string) => {
+  const handleSelectService = useCallback((serviceName: string) => {
     setSelectedServicePreset(serviceName);
     const contactEl = document.getElementById('contact');
     if (contactEl) {
       contactEl.scrollIntoView({ behavior: 'smooth' });
     }
-  };
+  }, []);
 
-  const handleOpenVideo = (url: string, title: string) => {
+  const handleOpenVideo = useCallback((url: string, title: string) => {
     setVideoModal({
       isOpen: true,
       url,
       title,
     });
-  };
+  }, []);
 
-  const handleOpenImage = (image: string, title: string, description: string) => {
+  const handleCloseVideo = useCallback(() => {
+    setVideoModal({ isOpen: false, url: '', title: '' });
+  }, []);
+
+  const handleOpenImage = useCallback((image: string, title: string, description: string) => {
     setImageModal({
       isOpen: true,
       image,
       title,
       description,
     });
-  };
+  }, []);
+
+  const handleCloseImage = useCallback(() => {
+    setImageModal({ isOpen: false, image: '', title: '', description: '' });
+  }, []);
+
+  const handleOpenAdmin = useCallback(() => {
+    setIsAdminOpen(true);
+  }, []);
+
+  const handleCloseAdmin = useCallback(() => {
+    setIsAdminOpen(false);
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-[#FAFAFA] text-[#111111] selection:bg-[#00D664] selection:text-white">
       {/* Floating Light Luxury Navbar */}
-      <Navbar onOpenAdmin={() => setIsAdminOpen(true)} />
+      <Navbar onOpenAdmin={handleOpenAdmin} />
 
       {/* Main Sections with Silky Scroll Reveal Animations */}
       <main>
@@ -182,35 +200,41 @@ export function App() {
       </main>
 
       {/* Footer with Secret Camera Emoji (No text, No password tooltip) */}
-      <Footer onOpenAdmin={() => setIsAdminOpen(true)} />
+      <Footer onOpenAdmin={handleOpenAdmin} />
 
-      {/* Structured Executive Admin Console Modal */}
-      <AdminModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-        content={content}
-        services={services}
-        portfolio={portfolio}
-        clients={clients}
-        onDataUpdated={loadData}
-      />
+      {/* Modals are lazily loaded and mounted strictly on demand */}
+      <Suspense fallback={null}>
+        {isAdminOpen && (
+          <AdminModal
+            isOpen={isAdminOpen}
+            onClose={handleCloseAdmin}
+            content={content}
+            services={services}
+            portfolio={portfolio}
+            clients={clients}
+            onDataUpdated={loadData}
+          />
+        )}
 
-      {/* Video Player Modal */}
-      <VideoModal
-        isOpen={videoModal.isOpen}
-        videoUrl={videoModal.url}
-        title={videoModal.title}
-        onClose={() => setVideoModal({ isOpen: false, url: '', title: '' })}
-      />
+        {videoModal.isOpen && (
+          <VideoModal
+            isOpen={videoModal.isOpen}
+            videoUrl={videoModal.url}
+            title={videoModal.title}
+            onClose={handleCloseVideo}
+          />
+        )}
 
-      {/* Image Lightbox Modal */}
-      <ImageModal
-        isOpen={imageModal.isOpen}
-        image={imageModal.image}
-        title={imageModal.title}
-        description={imageModal.description}
-        onClose={() => setImageModal({ isOpen: false, image: '', title: '', description: '' })}
-      />
+        {imageModal.isOpen && (
+          <ImageModal
+            isOpen={imageModal.isOpen}
+            image={imageModal.image}
+            title={imageModal.title}
+            description={imageModal.description}
+            onClose={handleCloseImage}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

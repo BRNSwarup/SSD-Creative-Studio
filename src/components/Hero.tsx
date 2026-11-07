@@ -8,7 +8,7 @@ interface HeroProps {
   onOpenVideo: (url: string, title: string) => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ content, onOpenVideo }) => {
+export const Hero: React.FC<HeroProps> = React.memo(({ content, onOpenVideo }) => {
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -120,4 +120,6 @@ export const Hero: React.FC<HeroProps> = ({ content, onOpenVideo }) => {
       </button>
     </section>
   );
-};
+});
+
+Hero.displayName = 'Hero';

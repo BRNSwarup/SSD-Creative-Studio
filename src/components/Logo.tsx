@@ -7,7 +7,7 @@ interface LogoProps {
   theme?: 'light' | 'dark';
 }
 
-export const Logo: React.FC<LogoProps> = ({
+export const Logo: React.FC<LogoProps> = React.memo(({
   className = '',
   size = 'md',
   showBadgeOnly = false,
@@ -91,4 +91,6 @@ export const Logo: React.FC<LogoProps> = ({
       )}
     </div>
   );
-};
+});
+
+Logo.displayName = 'Logo';

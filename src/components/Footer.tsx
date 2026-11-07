@@ -6,7 +6,7 @@ interface FooterProps {
   onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
+export const Footer: React.FC<FooterProps> = React.memo(({ onOpenAdmin }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -116,4 +116,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdmin }) => {
       </div>
     </footer>
   );
-};
+});
+
+Footer.displayName = 'Footer';

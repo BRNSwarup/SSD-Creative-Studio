@@ -6,39 +6,41 @@ interface WhyUsProps {
   content: SiteContent;
 }
 
-export const WhyUs: React.FC<WhyUsProps> = ({ content }) => {
-  const highlights = [
-    {
-      title: 'CREATIVE-FIRST APPROACH',
-      tag: 'Aesthetic Dominance',
-      desc: 'We discard generic templates and cookie-cutter formulas. Every visual, narrative, and interaction is tailor-crafted to arrest attention in noisy markets.',
-      icon: Sparkles
-    },
-    {
-      title: 'COMPLETE DIGITAL SOLUTIONS',
-      tag: 'Zero Silos',
-      desc: 'No finger-pointing between camera crews and developers. From your initial showreel shoot to your enterprise SaaS portal, we handle the entire spectrum.',
-      icon: Target
-    },
-    {
-      title: 'PROFESSIONAL VISUAL PRODUCTION',
-      tag: 'Cinema Grade',
-      desc: 'Equipped with Hollywood-grade cinema cameras, high-altitude FPV drones, anamorphic glass, and color-calibrated suites for peerless quality.',
-      icon: Video
-    },
-    {
-      title: 'BUSINESS-FOCUSED STRATEGIES',
-      tag: 'Measurable ROI',
-      desc: 'Stunning creative that moves balance sheets. Every campaign and design decision ties directly back to customer acquisition, retention, and brand equity.',
-      icon: TrendingUp
-    },
-    {
-      title: 'TECHNOLOGY-DRIVEN EXECUTION',
-      tag: 'Full-Stack Mastery',
-      desc: 'Leveraging modern WebGL, 3D interactive graphics, cloud architectures, and intelligent automations that future-proof your digital presence.',
-      icon: Cpu
-    }
-  ];
+const WHY_US_HIGHLIGHTS = [
+  {
+    title: 'CREATIVE-FIRST APPROACH',
+    tag: 'Aesthetic Dominance',
+    desc: 'We discard generic templates and cookie-cutter formulas. Every visual, narrative, and interaction is tailor-crafted to arrest attention in noisy markets.',
+    icon: Sparkles
+  },
+  {
+    title: 'COMPLETE DIGITAL SOLUTIONS',
+    tag: 'Zero Silos',
+    desc: 'No finger-pointing between camera crews and developers. From your initial showreel shoot to your enterprise SaaS portal, we handle the entire spectrum.',
+    icon: Target
+  },
+  {
+    title: 'PROFESSIONAL VISUAL PRODUCTION',
+    tag: 'Cinema Grade',
+    desc: 'Equipped with Hollywood-grade cinema cameras, high-altitude FPV drones, anamorphic glass, and color-calibrated suites for peerless quality.',
+    icon: Video
+  },
+  {
+    title: 'BUSINESS-FOCUSED STRATEGIES',
+    tag: 'Measurable ROI',
+    desc: 'Stunning creative that moves balance sheets. Every campaign and design decision ties directly back to customer acquisition, retention, and brand equity.',
+    icon: TrendingUp
+  },
+  {
+    title: 'TECHNOLOGY-DRIVEN EXECUTION',
+    tag: 'Full-Stack Mastery',
+    desc: 'Leveraging modern WebGL, 3D interactive graphics, cloud architectures, and intelligent automations that future-proof your digital presence.',
+    icon: Cpu
+  }
+];
+
+export const WhyUs: React.FC<WhyUsProps> = React.memo(({ content }) => {
+  const highlights = WHY_US_HIGHLIGHTS;
 
   return (
     <section id="why-us" className="relative py-28 px-4 sm:px-6 lg:px-8 bg-[#FAFAFA] overflow-hidden">
@@ -126,4 +128,6 @@ export const WhyUs: React.FC<WhyUsProps> = ({ content }) => {
       </div>
     </section>
   );
-};
+});
+
+WhyUs.displayName = 'WhyUs';

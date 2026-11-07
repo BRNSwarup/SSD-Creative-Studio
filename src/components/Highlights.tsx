@@ -6,8 +6,8 @@ interface HighlightsProps {
   content: SiteContent;
 }
 
-export const Highlights: React.FC<HighlightsProps> = ({ content }) => {
-  const highlights = [
+export const Highlights: React.FC<HighlightsProps> = React.memo(({ content }) => {
+  const highlights = React.useMemo(() => [
     {
       number: content.hero_stat1_num || '4K+',
       label: content.hero_stat1_label || 'Cinematic Shoots',
@@ -29,7 +29,7 @@ export const Highlights: React.FC<HighlightsProps> = ({ content }) => {
       icon: Award,
       badge: 'STUDIO EXCELLENCE'
     }
-  ];
+  ], [content.hero_stat1_num, content.hero_stat1_label, content.hero_stat2_num, content.hero_stat2_label, content.hero_stat3_num, content.hero_stat3_label]);
 
   return (
     <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-white border-t border-b border-black/[0.08] overflow-hidden">
@@ -99,5 +99,7 @@ export const Highlights: React.FC<HighlightsProps> = ({ content }) => {
       </div>
     </section>
   );
-};
+});
+
+Highlights.displayName = 'Highlights';
 

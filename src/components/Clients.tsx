@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, memo } from 'react';
 import { ClientItem } from '../types';
 import { Quote, Star } from 'lucide-react';
 
@@ -6,11 +6,11 @@ interface ClientsProps {
   clients: ClientItem[];
 }
 
-export const Clients: React.FC<ClientsProps> = ({ clients }) => {
-  // Duplicate for seamless infinite marquee loop
-  const marqueeClients = [...clients, ...clients, ...clients];
-  const testimonials = clients.filter(c => c.testimonial);
-  const marqueeTestimonials = [...testimonials, ...testimonials, ...testimonials];
+export const Clients: React.FC<ClientsProps> = memo(({ clients }) => {
+  // Memoize duplicate arrays to avoid allocating on every render
+  const marqueeClients = useMemo(() => [...clients, ...clients, ...clients], [clients]);
+  const testimonials = useMemo(() => clients.filter(c => c.testimonial), [clients]);
+  const marqueeTestimonials = useMemo(() => [...testimonials, ...testimonials, ...testimonials], [testimonials]);
 
   return (
     <section className="relative py-28 bg-white border-t border-black/[0.08] overflow-hidden">
@@ -33,11 +33,11 @@ export const Clients: React.FC<ClientsProps> = ({ clients }) => {
         <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
 
-        <div className="flex items-center gap-12 whitespace-nowrap animate-marquee hover:[animation-play-state:paused]">
+        <div className="flex items-center gap-12 whitespace-nowrap animate-marquee hover:[animation-play-state:paused] will-change-transform">
           {marqueeClients.map((client, idx) => (
             <div
               key={`${client.id}-${idx}`}
-              className="flex items-center gap-3 px-6 py-2 rounded-full bg-white border border-black/[0.08] shadow-sm shrink-0 transition-transform hover:scale-105 cursor-default"
+              className="flex items-center gap-3 px-6 py-2 rounded-full bg-white border border-black/[0.08] shadow-sm shrink-0 transition-transform duration-200 hover:scale-105 cursor-default"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-brand-green shrink-0"></span>
               <span className="font-display text-lg font-black tracking-wider uppercase text-black">
@@ -57,11 +57,11 @@ export const Clients: React.FC<ClientsProps> = ({ clients }) => {
         <div className="absolute left-0 top-0 bottom-0 w-28 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
 
-        <div className="flex gap-6 whitespace-nowrap animate-marquee-reverse hover:[animation-play-state:paused]">
+        <div className="flex gap-6 whitespace-nowrap animate-marquee-reverse hover:[animation-play-state:paused] will-change-transform">
           {marqueeTestimonials.map((t, idx) => (
             <div
               key={`testimonial-${t.id}-${idx}`}
-              className="w-[360px] sm:w-[420px] p-8 rounded-3xl luxury-card bg-white border border-black/[0.08] shadow-sm hover:shadow-luxury transition-all duration-300 shrink-0 flex flex-col justify-between whitespace-normal group"
+              className="w-[360px] sm:w-[420px] p-8 rounded-3xl luxury-card bg-white border border-black/[0.08] shadow-sm hover:shadow-luxury transition-shadow duration-300 shrink-0 flex flex-col justify-between whitespace-normal group"
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -97,4 +97,6 @@ export const Clients: React.FC<ClientsProps> = ({ clients }) => {
       </div>
     </section>
   );
-};
+});
+
+Clients.displayName = 'Clients';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { PortfolioItem } from '../types';
 import { Play, Eye, Film, Camera, Share2, Code2, Sparkles } from 'lucide-react';
 
@@ -8,21 +8,23 @@ interface PortfolioProps {
   onOpenImage: (image: string, title: string, desc: string) => void;
 }
 
-export const Portfolio: React.FC<PortfolioProps> = ({ portfolio, onOpenVideo, onOpenImage }) => {
+const FILTERS = [
+  { id: 'all', label: 'All Works' },
+  { id: 'video', label: 'Video Showcase', icon: Film },
+  { id: 'photography', label: 'Photography', icon: Camera },
+  { id: 'social', label: 'Social Media', icon: Share2 },
+  { id: 'web', label: 'Web & Tech', icon: Code2 },
+  { id: 'branding', label: 'Branding & 3D', icon: Sparkles },
+] as const;
+
+export const Portfolio: React.FC<PortfolioProps> = memo(({ portfolio, onOpenVideo, onOpenImage }) => {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'video' | 'photography' | 'social' | 'web' | 'branding'>('all');
 
-  const filteredItems = selectedFilter === 'all'
-    ? portfolio
-    : portfolio.filter((item) => item.category === selectedFilter);
-
-  const filters = [
-    { id: 'all', label: 'All Works' },
-    { id: 'video', label: 'Video Showcase', icon: Film },
-    { id: 'photography', label: 'Photography', icon: Camera },
-    { id: 'social', label: 'Social Media', icon: Share2 },
-    { id: 'web', label: 'Web & Tech', icon: Code2 },
-    { id: 'branding', label: 'Branding & 3D', icon: Sparkles },
-  ];
+  const filteredItems = useMemo(() => {
+    return selectedFilter === 'all'
+      ? portfolio
+      : portfolio.filter((item) => item.category === selectedFilter);
+  }, [portfolio, selectedFilter]);
 
   return (
     <section id="portfolio" className="relative py-28 px-4 sm:px-6 lg:px-8 bg-white border-t border-black/[0.06] overflow-hidden">
@@ -49,11 +51,11 @@ export const Portfolio: React.FC<PortfolioProps> = ({ portfolio, onOpenVideo, on
 
           {/* Dynamic Filter Tabs */}
           <div className="flex flex-wrap items-center gap-1.5 bg-neutral-100 p-1.5 rounded-2xl border border-black/[0.06]">
-            {filters.map((f) => (
+            {FILTERS.map((f) => (
               <button
                 key={f.id}
-                onClick={() => setSelectedFilter(f.id as any)}
-                className={`text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
+                onClick={() => setSelectedFilter(f.id)}
+                className={`text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl transition-colors duration-150 cursor-pointer ${
                   selectedFilter === f.id
                     ? 'bg-black text-white shadow-sm'
                     : 'text-neutral-600 hover:text-black hover:bg-black/[0.03]'
@@ -77,26 +79,29 @@ export const Portfolio: React.FC<PortfolioProps> = ({ portfolio, onOpenVideo, on
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                  width={600}
+                  height={375}
                   loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
 
                 {/* Category & Status Badge */}
                 <div className="absolute top-4 left-4 flex items-center gap-1.5">
-                  <span className="px-3 py-1 rounded-full text-xs uppercase tracking-wider bg-black/80 backdrop-blur-md text-brand-green border border-brand-green/30 font-bold">
+                  <span className="px-3 py-1 rounded-full text-xs uppercase tracking-wider bg-black/80 backdrop-blur-sm text-brand-green border border-brand-green/30 font-bold">
                     {item.categoryLabel}
                   </span>
                   {item.featured && (
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase bg-white/90 text-black backdrop-blur-md font-bold">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase bg-white/90 text-black backdrop-blur-sm font-bold">
                       Featured
                     </span>
                   )}
                 </div>
 
                 {/* Hover Action Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   {item.videoUrl ? (
                     <button
                       onClick={() => onOpenVideo(item.videoUrl!, item.title)}
@@ -174,4 +179,6 @@ export const Portfolio: React.FC<PortfolioProps> = ({ portfolio, onOpenVideo, on
       </div>
     </section>
   );
-};
+});
+
+Portfolio.displayName = 'Portfolio';

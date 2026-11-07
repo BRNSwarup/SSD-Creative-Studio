@@ -1,12 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 import * as THREE from 'three';
 
-export const HeroScene: React.FC = () => {
+export const HeroScene: React.FC = memo(() => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    // Check prefers-reduced-motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let renderer: THREE.WebGLRenderer;
     try {
@@ -19,11 +22,12 @@ export const HeroScene: React.FC = () => {
       return;
     }
 
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    let width = container.clientWidth || 500;
+    let height = container.clientHeight || 500;
 
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Cap pixel ratio to 1.5 for optimal performance and crispness
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.35;
     container.appendChild(renderer.domElement);
@@ -32,7 +36,7 @@ export const HeroScene: React.FC = () => {
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
     camera.position.set(0, 0, 7.8);
 
-    // Studio Lighting for Light Theme
+    // Studio Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
 
@@ -48,6 +52,9 @@ export const HeroScene: React.FC = () => {
     topSoftLight.position.set(4, 5, 3);
     scene.add(topSoftLight);
 
+    // Track all disposables for cleanup
+    const disposables: (THREE.BufferGeometry | THREE.Material)[] = [];
+
     // ==========================================
     // FLOATING 3D CINEMA LENS (HIGH CONTRAST ON WHITE)
     // ==========================================
@@ -55,19 +62,20 @@ export const HeroScene: React.FC = () => {
     scene.add(masterGroup);
 
     // Outer Anamorphic Lens Barrel (Deep Anodized Black Aluminum)
-    const barrelGeo = new THREE.CylinderGeometry(1.65, 1.85, 1.55, 64, 1, true);
+    const barrelGeo = new THREE.CylinderGeometry(1.65, 1.85, 1.55, 48, 1, true);
     const barrelMat = new THREE.MeshStandardMaterial({
       color: 0x18181b,
       metalness: 0.95,
       roughness: 0.18,
       side: THREE.DoubleSide
     });
+    disposables.push(barrelGeo, barrelMat);
     const barrel = new THREE.Mesh(barrelGeo, barrelMat);
     barrel.rotation.x = Math.PI / 2;
     masterGroup.add(barrel);
 
     // Signature Electric Emerald Accent Bezel
-    const accentBezelGeo = new THREE.TorusGeometry(1.78, 0.05, 16, 64);
+    const accentBezelGeo = new THREE.TorusGeometry(1.78, 0.05, 16, 48);
     const accentBezelMat = new THREE.MeshStandardMaterial({
       color: 0x00C853,
       emissive: 0x00C853,
@@ -75,24 +83,26 @@ export const HeroScene: React.FC = () => {
       roughness: 0.2,
       metalness: 0.8
     });
+    disposables.push(accentBezelGeo, accentBezelMat);
     const accentBezel = new THREE.Mesh(accentBezelGeo, accentBezelMat);
     accentBezel.position.z = 0.78;
     masterGroup.add(accentBezel);
 
     // Knurled Focus Ring (Silver-Titanium Ribbed)
-    const focusRingGeo = new THREE.CylinderGeometry(1.73, 1.73, 0.42, 64);
+    const focusRingGeo = new THREE.CylinderGeometry(1.73, 1.73, 0.42, 48);
     const focusRingMat = new THREE.MeshStandardMaterial({
       color: 0x27272a,
       metalness: 0.9,
       roughness: 0.3
     });
+    disposables.push(focusRingGeo, focusRingMat);
     const focusRing = new THREE.Mesh(focusRingGeo, focusRingMat);
     focusRing.rotation.x = Math.PI / 2;
     focusRing.position.z = -0.18;
     masterGroup.add(focusRing);
 
     // Optical Glass Front Lens Element (Reflective Curve)
-    const glassGeo = new THREE.SphereGeometry(1.55, 64, 32, 0, Math.PI * 2, 0, Math.PI * 0.32);
+    const glassGeo = new THREE.SphereGeometry(1.55, 48, 24, 0, Math.PI * 2, 0, Math.PI * 0.32);
     const glassMat = new THREE.MeshPhysicalMaterial({
       color: 0x011a0b,
       transmission: 0.93,
@@ -105,6 +115,7 @@ export const HeroScene: React.FC = () => {
       clearcoat: 1.0,
       clearcoatRoughness: 0.05
     });
+    disposables.push(glassGeo, glassMat);
     const opticalLens = new THREE.Mesh(glassGeo, glassMat);
     opticalLens.position.z = 0.3;
     masterGroup.add(opticalLens);
@@ -128,6 +139,7 @@ export const HeroScene: React.FC = () => {
       roughness: 0.3,
       side: THREE.DoubleSide
     });
+    disposables.push(bladeGeo, bladeMat);
 
     for (let i = 0; i < 9; i++) {
       const angle = (i / 9) * Math.PI * 2;
@@ -138,7 +150,7 @@ export const HeroScene: React.FC = () => {
     }
 
     // Outer Floating Emerald Orbit Ring
-    const haloGeo = new THREE.TorusGeometry(2.65, 0.025, 16, 100);
+    const haloGeo = new THREE.TorusGeometry(2.65, 0.025, 12, 64);
     const haloMat = new THREE.MeshPhysicalMaterial({
       color: 0x00C853,
       transmission: 0.8,
@@ -147,23 +159,25 @@ export const HeroScene: React.FC = () => {
       roughness: 0.1,
       metalness: 0.2
     });
+    disposables.push(haloGeo, haloMat);
     const haloRing = new THREE.Mesh(haloGeo, haloMat);
     haloRing.rotation.x = Math.PI / 3;
     masterGroup.add(haloRing);
 
     // Secondary Chrome Orbit Ring
-    const haloGeo2 = new THREE.TorusGeometry(3.2, 0.015, 16, 100);
+    const haloGeo2 = new THREE.TorusGeometry(3.2, 0.015, 12, 64);
     const haloMat2 = new THREE.MeshBasicMaterial({
       color: 0x111111,
       transparent: true,
       opacity: 0.25
     });
+    disposables.push(haloGeo2, haloMat2);
     const haloRing2 = new THREE.Mesh(haloGeo2, haloMat2);
     haloRing2.rotation.y = Math.PI / 4;
     masterGroup.add(haloRing2);
 
     // Floating Green Prismatic Bokeh
-    const particleCount = 140;
+    const particleCount = 80; // Optimized particle count
     const particleGeo = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
 
@@ -181,64 +195,98 @@ export const HeroScene: React.FC = () => {
       opacity: 0.6,
       blending: THREE.NormalBlending
     });
+    disposables.push(particleGeo, particleMat);
     const particles = new THREE.Points(particleGeo, particleMat);
     scene.add(particles);
 
-    // Mouse Tracking
+    // Mouse Tracking - CACHED rect to avoid layout thrashing!
     let mouseX = 0;
     let mouseY = 0;
     let targetX = 0;
     let targetY = 0;
+    let cachedRect = container.getBoundingClientRect();
 
     const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      targetX = x * 0.45;
-      targetY = y * 0.35;
+      if (!cachedRect.width || !cachedRect.height) return;
+      const x = ((e.clientX - cachedRect.left) / cachedRect.width) * 2 - 1;
+      const y = -(((e.clientY - cachedRect.top) / cachedRect.height) * 2 - 1);
+      targetX = x * 0.4;
+      targetY = y * 0.3;
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
-    let animationFrameId: number;
+    let animationFrameId: number = 0;
+    let isVisible = true;
     const clock = new THREE.Clock();
 
     const animate = () => {
+      if (!isVisible) return; // Pause rendering completely when off-screen!
+
       animationFrameId = requestAnimationFrame(animate);
       const elapsed = clock.getElapsedTime();
 
-      mouseX += (targetX - mouseX) * 0.04;
-      mouseY += (targetY - mouseY) * 0.04;
+      mouseX += (targetX - mouseX) * 0.05;
+      mouseY += (targetY - mouseY) * 0.05;
 
-      masterGroup.rotation.y = mouseX * 0.7 + Math.sin(elapsed * 0.3) * 0.08;
-      masterGroup.rotation.x = -mouseY * 0.7 + Math.cos(elapsed * 0.4) * 0.06;
-      masterGroup.position.y = Math.sin(elapsed * 0.6) * 0.1;
+      const motionFactor = prefersReducedMotion ? 0.2 : 1;
 
-      haloRing.rotation.z = elapsed * 0.1;
-      haloRing2.rotation.z = -elapsed * 0.08;
-      apertureIrisGroup.rotation.z = Math.sin(elapsed * 0.4) * 0.15;
-      particles.rotation.y = elapsed * 0.02;
+      masterGroup.rotation.y = mouseX * 0.7 + Math.sin(elapsed * 0.3 * motionFactor) * 0.08;
+      masterGroup.rotation.x = -mouseY * 0.7 + Math.cos(elapsed * 0.4 * motionFactor) * 0.06;
+      masterGroup.position.y = Math.sin(elapsed * 0.6 * motionFactor) * 0.1;
+
+      haloRing.rotation.z = elapsed * 0.1 * motionFactor;
+      haloRing2.rotation.z = -elapsed * 0.08 * motionFactor;
+      apertureIrisGroup.rotation.z = Math.sin(elapsed * 0.4 * motionFactor) * 0.15;
+      particles.rotation.y = elapsed * 0.02 * motionFactor;
 
       renderer.render(scene, camera);
     };
 
-    animate();
+    // IntersectionObserver to pause loop when scrolled away
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const wasVisible = isVisible;
+        isVisible = entry.isIntersecting;
+
+        if (isVisible && !wasVisible) {
+          cachedRect = container.getBoundingClientRect();
+          animationFrameId = requestAnimationFrame(animate);
+        } else if (!isVisible && wasVisible) {
+          cancelAnimationFrame(animationFrameId);
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    observer.observe(container);
+
+    // Initial start
+    animationFrameId = requestAnimationFrame(animate);
 
     const handleResize = () => {
       if (!container) return;
-      const newWidth = container.clientWidth;
-      const newHeight = container.clientHeight;
-      camera.aspect = newWidth / newHeight;
+      cachedRect = container.getBoundingClientRect();
+      width = container.clientWidth;
+      height = container.clientHeight;
+      camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setSize(newWidth, newHeight);
+      renderer.setSize(width, height);
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
+      observer.disconnect();
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
+
+      // Memory cleanup
+      disposables.forEach((item) => item.dispose());
+      scene.clear();
+
       if (renderer.domElement && container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
@@ -251,7 +299,7 @@ export const HeroScene: React.FC = () => {
       <div ref={containerRef} className="absolute inset-0 cursor-grab active:cursor-grabbing" />
 
       {/* Floating 3D Badge on White */}
-      <div className="absolute top-5 right-5 pointer-events-none flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-black/10 text-xs font-semibold text-neutral-800 shadow-sm">
+      <div className="absolute top-5 right-5 pointer-events-none flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-black/10 text-xs font-semibold text-neutral-800 shadow-sm">
         <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse"></span>
         <span className="tracking-widest uppercase text-[10px]">3D Cinema Rig</span>
       </div>
@@ -266,4 +314,6 @@ export const HeroScene: React.FC = () => {
       </div>
     </div>
   );
-};
+});
+
+HeroScene.displayName = 'HeroScene';

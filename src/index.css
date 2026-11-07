@@ -85,3 +85,25 @@ body {
 .animate-fade-in-up {
   animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Performance Optimizations: Hardware acceleration & content-visibility */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Off-screen layout skipping for below-the-fold sections */
+#services, #portfolio, #why-us, #clients, #contact {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 900px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

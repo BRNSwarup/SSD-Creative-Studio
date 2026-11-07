@@ -9,7 +9,7 @@ interface ContactProps {
   selectedServicePreset?: string;
 }
 
-export const Contact: React.FC<ContactProps> = ({ content, selectedServicePreset }) => {
+export const Contact: React.FC<ContactProps> = React.memo(({ content, selectedServicePreset }) => {
   const [formData, setFormData] = useState({
     business_name: '',
     contact_person: '',
@@ -398,4 +398,6 @@ export const Contact: React.FC<ContactProps> = ({ content, selectedServicePreset
       </div>
     </section>
   );
-};
+});
+
+Contact.displayName = 'Contact';

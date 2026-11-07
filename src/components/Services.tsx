@@ -8,20 +8,22 @@ interface ServicesProps {
   onSelectService: (serviceName: string) => void;
 }
 
-export const Services: React.FC<ServicesProps> = ({ services, onSelectService }) => {
-  const getIcon = (visualType: string) => {
-    switch (visualType) {
-      case 'camera':
-        return Camera;
-      case 'network':
-        return Share2;
-      case 'prism':
-        return Palette;
-      case 'code':
-      default:
-        return Code2;
-    }
-  };
+const getServiceIcon = (visualType: string) => {
+  switch (visualType) {
+    case 'camera':
+      return Camera;
+    case 'network':
+      return Share2;
+    case 'prism':
+      return Palette;
+    case 'code':
+    default:
+      return Code2;
+  }
+};
+
+export const Services: React.FC<ServicesProps> = React.memo(({ services, onSelectService }) => {
+  const getIcon = getServiceIcon;
 
   return (
     <section id="services" className="relative py-28 px-4 sm:px-6 lg:px-8 bg-[#FAFAFA] overflow-hidden">
@@ -132,4 +134,6 @@ export const Services: React.FC<ServicesProps> = ({ services, onSelectService })
       </div>
     </section>
   );
-};
+});
+
+Services.displayName = 'Services';

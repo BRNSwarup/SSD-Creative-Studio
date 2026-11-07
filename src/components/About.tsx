@@ -6,37 +6,39 @@ interface AboutProps {
   content: SiteContent;
 }
 
-export const About: React.FC<AboutProps> = ({ content }) => {
-  const philosophyPillars = [
-    {
-      step: '01',
-      title: 'CREATE',
-      subtitle: 'Original Storytelling',
-      desc: 'We ideate bold creative concepts, script cinematic narratives, and design visual ecosystems that defy conventional agency boredom.',
-      icon: Palette
-    },
-    {
-      step: '02',
-      title: 'CAPTURE',
-      subtitle: 'Cinema-Grade Production',
-      desc: 'Armed with high-end cinema rigs, autonomous 4K/8K cameras, FPV drones, and seasoned directors, we capture the pure soul of your brand.',
-      icon: Camera
-    },
-    {
-      step: '03',
-      title: 'GROW',
-      subtitle: 'Social & Brand Velocity',
-      desc: 'Content without distribution is invisible. We execute high-ROI social strategies, viral community campaigns, and algorithmic reach.',
-      icon: Share2
-    },
-    {
-      step: '04',
-      title: 'DIGITIZE',
-      subtitle: 'Full-Stack Technology',
-      desc: 'We engineer bespoke web applications, interactive 3D portals, SaaS platforms, and workflow automations built for speed and conversion.',
-      icon: Code2
-    }
-  ];
+const PHILOSOPHY_PILLARS = [
+  {
+    step: '01',
+    title: 'CREATE',
+    subtitle: 'Original Storytelling',
+    desc: 'We ideate bold creative concepts, script cinematic narratives, and design visual ecosystems that defy conventional agency boredom.',
+    icon: Palette
+  },
+  {
+    step: '02',
+    title: 'CAPTURE',
+    subtitle: 'Cinema-Grade Production',
+    desc: 'Armed with high-end cinema rigs, autonomous 4K/8K cameras, FPV drones, and seasoned directors, we capture the pure soul of your brand.',
+    icon: Camera
+  },
+  {
+    step: '03',
+    title: 'GROW',
+    subtitle: 'Social & Brand Velocity',
+    desc: 'Content without distribution is invisible. We execute high-ROI social strategies, viral community campaigns, and algorithmic reach.',
+    icon: Share2
+  },
+  {
+    step: '04',
+    title: 'DIGITIZE',
+    subtitle: 'Full-Stack Technology',
+    desc: 'We engineer bespoke web applications, interactive 3D portals, SaaS platforms, and workflow automations built for speed and conversion.',
+    icon: Code2
+  }
+];
+
+export const About: React.FC<AboutProps> = React.memo(({ content }) => {
+  const philosophyPillars = PHILOSOPHY_PILLARS;
 
   return (
     <section id="about" className="relative py-28 px-4 sm:px-6 lg:px-8 bg-white border-t border-b border-black/[0.06] overflow-hidden">
@@ -134,4 +136,6 @@ export const About: React.FC<AboutProps> = ({ content }) => {
       </div>
     </section>
   );
-};
+});
+
+About.displayName = 'About';
