@@ -58,6 +58,21 @@ export const Services: React.FC<ServicesProps> = React.memo(({ services, onSelec
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {services.map((service, index) => {
             const Icon = getIcon(service.visualType);
+            const cardImage = service.image || 
+              (service.id === 'creative-media' ? '/services/creative-media-3d.jpg' : 
+               service.id === 'social-media' ? '/services/social-media-3d.png' : 
+               service.id === 'branding-design' ? '/services/branding-design-3d.jpg' : 
+               service.id === 'web-technology' ? '/services/web-technology-3d.jpg' : undefined);
+
+            const badgeTop = 
+              service.id === 'creative-media' ? '3D CINEMA RIG' : 
+              service.id === 'branding-design' ? '3D IDENTITY SUITE' : 
+              service.id === 'web-technology' ? '3D FULL-STACK LAB' : '3D SPATIAL ASSET';
+            const badgeBottom = 
+              service.id === 'creative-media' ? '4K/8K • DRONE & EDIT' : 
+              service.id === 'branding-design' ? 'VECTOR • PRISM • COLLATERAL' : 
+              service.id === 'web-technology' ? 'REACT • CLOUD • SAAS • 3D' : 'MULTI-PLATFORM GROWTH';
+
             return (
               <div
                 key={service.id}
@@ -83,7 +98,41 @@ export const Services: React.FC<ServicesProps> = React.memo(({ services, onSelec
 
                   {/* 3D Visual Experience */}
                   <div className="relative my-4">
-                    <ServiceCard3D type={service.visualType} />
+                    {cardImage ? (
+                      <div className="relative w-full h-48 md:h-56 flex items-center justify-center overflow-hidden rounded-2xl bg-neutral-950 border border-black/10 group-hover:border-brand-green/40 transition-all duration-500 shadow-md">
+                        {/* Ambient Neon Purple & Green Glow behind image */}
+                        <div className="absolute -inset-2 bg-gradient-to-tr from-purple-600/20 via-brand-green/15 to-transparent blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+                        {/* 3D Render Image */}
+                        <img
+                          src={cardImage}
+                          alt={service.title}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        />
+
+                        {/* Glass Vignette & Lighting Rim */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/25 pointer-events-none" />
+                        <div className="absolute inset-0 ring-1 ring-inset ring-white/15 rounded-2xl pointer-events-none" />
+
+                        {/* Top HUD Badge */}
+                        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/65 backdrop-blur-md border border-white/15 text-[10px] font-extrabold tracking-wider text-white shadow-sm">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-green"></span>
+                          </span>
+                          <span>{badgeTop}</span>
+                        </div>
+
+                        {/* Bottom Telemetry Tag */}
+                        <div className="absolute bottom-3 right-3 text-[10px] font-mono font-bold text-white/90 bg-black/65 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 uppercase tracking-widest shadow-sm">
+                          {badgeBottom}
+                        </div>
+                      </div>
+                    ) : (
+                      <ServiceCard3D type={service.visualType} />
+                    )}
                   </div>
 
                   {/* Tagline & Description */}

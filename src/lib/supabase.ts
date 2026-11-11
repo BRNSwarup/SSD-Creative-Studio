@@ -23,11 +23,20 @@ const STORAGE_CONTENT_KEY = 'ssd_studio_content_v1';
 
 // ----------------- SITE CONTENT -----------------
 export async function getSiteContent(): Promise<SiteContent> {
+  const enrichContent = (data: any): SiteContent => {
+    const res = { ...INITIAL_SITE_CONTENT, ...data };
+    if (!res.hero_reel_url || res.hero_reel_url.includes('BigBuckBunny')) {
+      res.hero_reel_url = '/showreel.mp4';
+    }
+    return res;
+  };
+
   try {
     const { data, error } = await supabase.from('site_content').select('*').single();
     if (!error && data) {
-      localStorage.setItem(STORAGE_CONTENT_KEY, JSON.stringify(data));
-      return { ...INITIAL_SITE_CONTENT, ...data };
+      const enriched = enrichContent(data);
+      localStorage.setItem(STORAGE_CONTENT_KEY, JSON.stringify(enriched));
+      return enriched;
     }
   } catch (err) {
     console.warn('Supabase site_content fallback:', err);
@@ -36,7 +45,9 @@ export async function getSiteContent(): Promise<SiteContent> {
   const cached = localStorage.getItem(STORAGE_CONTENT_KEY);
   if (cached) {
     try {
-      return { ...INITIAL_SITE_CONTENT, ...JSON.parse(cached) };
+      const enriched = enrichContent(JSON.parse(cached));
+      localStorage.setItem(STORAGE_CONTENT_KEY, JSON.stringify(enriched));
+      return enriched;
     } catch (e) {}
   }
 
@@ -57,11 +68,20 @@ export async function saveSiteContent(content: SiteContent): Promise<boolean> {
 
 // ----------------- SERVICES -----------------
 export async function getServices(): Promise<ServiceItem[]> {
+  const enrichService = (s: any): ServiceItem => {
+    if (s.id === 'creative-media' && !s.image) return { ...s, image: '/services/creative-media-3d.jpg' };
+    if (s.id === 'social-media' && !s.image) return { ...s, image: '/services/social-media-3d.png' };
+    if (s.id === 'branding-design' && !s.image) return { ...s, image: '/services/branding-design-3d.jpg' };
+    if (s.id === 'web-technology' && !s.image) return { ...s, image: '/services/web-technology-3d.jpg' };
+    return s as ServiceItem;
+  };
+
   try {
     const { data, error } = await supabase.from('services').select('*');
     if (!error && data && data.length > 0) {
-      localStorage.setItem(STORAGE_SERVICES_KEY, JSON.stringify(data));
-      return data as ServiceItem[];
+      const merged = data.map(enrichService);
+      localStorage.setItem(STORAGE_SERVICES_KEY, JSON.stringify(merged));
+      return merged;
     }
   } catch (err) {
     console.warn('Supabase services fetch failed:', err);
@@ -70,7 +90,8 @@ export async function getServices(): Promise<ServiceItem[]> {
   const cached = localStorage.getItem(STORAGE_SERVICES_KEY);
   if (cached) {
     try {
-      return JSON.parse(cached);
+      const parsed = JSON.parse(cached);
+      return parsed.map(enrichService);
     } catch (e) {}
   }
 

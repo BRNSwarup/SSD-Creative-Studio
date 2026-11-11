@@ -9,6 +9,7 @@ export interface ServiceItem {
   items: string[];
   icon: string;
   visualType: 'camera' | 'network' | 'prism' | 'code';
+  image?: string;
 }
 
 export interface PortfolioItem {
