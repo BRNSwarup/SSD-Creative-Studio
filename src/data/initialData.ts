@@ -13,7 +13,7 @@ export const INITIAL_SITE_CONTENT: SiteContent = {
   hero_stat2_label: 'Brands Scaled',
   hero_stat3_num: '99.8%',
   hero_stat3_label: 'Client Delight',
-  hero_reel_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  hero_reel_url: '/showreel.mp4',
 
   // About Section
   about_badge: 'ABOUT SSD STUDIO',
@@ -48,6 +48,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     description: 'We craft high-octane visual experiences from the skies to the editing suite. Our cinema-grade gear and director-level eye produce imagery that leaves indelible marks.',
     visualType: 'camera',
     icon: 'Camera',
+    image: '/services/creative-media-3d.jpg',
     items: [
       'Drone photography and videography',
       'Cinema camera shoots (4K/8K HDR)',
@@ -64,6 +65,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     description: 'Turn scrollers into brand evangelists. We architect high-converting content roadmaps, manage brand voices across platforms, and drive exponential reach.',
     visualType: 'network',
     icon: 'Share2',
+    image: '/services/social-media-3d.png',
     items: [
       'Instagram, Facebook & LinkedIn management',
       'Data-driven content planning & calendars',
@@ -80,6 +82,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     description: 'We sculpt memorable brand identities, visionary design systems, and bespoke marketing collateral that evoke emotion and build prestige.',
     visualType: 'prism',
     icon: 'Palette',
+    image: '/services/branding-design-3d.jpg',
     items: [
       'Comprehensive brand identity & design systems',
       'High-impact promotional posters & OOH banners',
@@ -96,6 +99,7 @@ export const INITIAL_SERVICES: ServiceItem[] = [
     description: 'Engineering ultra-fast, aesthetically flawless digital solutions. From interactive 3D web experiences to enterprise SaaS applications and custom automation systems.',
     visualType: 'code',
     icon: 'Code2',
+    image: '/services/web-technology-3d.jpg',
     items: [
       'Custom bespoke business & agency websites',
       'High-conversion e-commerce platforms',

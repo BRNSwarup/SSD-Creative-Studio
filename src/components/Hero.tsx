@@ -1,5 +1,5 @@
 import React from 'react';
-import { HeroScene } from './3d/HeroScene';
+import { Hero3DAnimation } from './3d/Hero3DAnimation';
 import { SiteContent } from '../types';
 import { ArrowDown, Play, ArrowRight, Sparkles } from 'lucide-react';
 
@@ -88,7 +88,12 @@ export const Hero: React.FC<HeroProps> = React.memo(({ content, onOpenVideo }) =
 
             {/* Quick Reel Button */}
             <button
-              onClick={() => onOpenVideo(content.hero_reel_url, 'SSD Creative Studio Showreel')}
+              onClick={() => {
+                const reelUrl = content.hero_reel_url && !content.hero_reel_url.includes('BigBuckBunny')
+                  ? content.hero_reel_url
+                  : '/showreel.mp4';
+                onOpenVideo(reelUrl, 'SSD Creative Studio Showreel');
+              }}
               className="flex items-center gap-2.5 px-4 py-3 rounded-full text-xs text-neutral-800 hover:text-black transition-colors group cursor-pointer"
             >
               <div className="w-9 h-9 rounded-full bg-brand-green/15 border border-brand-green/30 flex items-center justify-center group-hover:bg-brand-green transition-all shadow-sm">
@@ -99,11 +104,9 @@ export const Hero: React.FC<HeroProps> = React.memo(({ content, onOpenVideo }) =
           </div>
         </div>
 
-        {/* Right Column: 3D Optical Cinema Installation */}
+        {/* Right Column: 3D Motion Graphics Experience */}
         <div className="lg:col-span-5 relative flex items-center justify-center">
-          <div className="relative w-full aspect-square max-w-[540px] rounded-3xl overflow-hidden luxury-card bg-white shadow-luxury">
-            <HeroScene />
-          </div>
+          <Hero3DAnimation />
         </div>
 
       </div>
