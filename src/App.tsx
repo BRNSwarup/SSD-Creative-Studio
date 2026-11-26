@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
-import { getSiteContent, getServices, getPortfolio, getClients } from './lib/supabase';
+import { getSiteContent, getServices, getPortfolio, getClients, subscribeToStudioUpdates } from './lib/supabase';
 import { ServiceItem, PortfolioItem, ClientItem, SiteContent } from './types';
 import { INITIAL_SITE_CONTENT } from './data/initialData';
 import { Navbar } from './components/Navbar';
@@ -68,6 +68,24 @@ export function App() {
 
   useEffect(() => {
     loadData();
+
+    // Real-time cross-browser & cross-tab sync via Supabase Realtime + BroadcastChannel
+    const unsubscribe = subscribeToStudioUpdates(() => {
+      loadData();
+    });
+
+    // Refresh when user switches back to this tab on desktop or mobile
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        loadData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [loadData]);
 
   const handleSelectService = useCallback((serviceName: string) => {

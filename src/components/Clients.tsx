@@ -14,15 +14,15 @@ export const Clients: React.FC<ClientsProps> = memo(({ clients }) => {
 
   return (
     <section className="relative py-28 bg-white border-t border-black/[0.08] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 space-y-4 text-center">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/[0.04] border border-black/[0.08] text-xs uppercase tracking-wider text-black font-extrabold">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-14 space-y-4 text-center">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FAFAFA] border border-black/[0.08] text-[11px] uppercase tracking-[0.16em] text-[#0A0A0A] font-bold">
           <span className="w-2 h-2 rounded-full bg-brand-green"></span>
-          <span>TRUSTED BY INDUSTRY LEADERS</span>
+          <span>06 // TRUSTED BY INDUSTRY LEADERS</span>
         </div>
-        <h2 className="font-display text-4xl sm:text-5xl font-black text-black">
-          PARTNERS &bull; <span className="text-brand-green text-glow-green">TESTIMONIALS</span>
+        <h2 className="font-display text-4xl sm:text-5xl font-black tracking-[-0.03em] text-[#0A0A0A]">
+          PARTNERS &bull; <span className="text-brand-green">TESTIMONIALS</span>
         </h2>
-        <p className="text-neutral-600 text-base max-w-2xl mx-auto">
+        <p className="text-neutral-600 text-base sm:text-lg max-w-2xl mx-auto">
           From breakthrough startups to global tech brands, hear how SSD Creative Studio transforms ambitious visions into unforgettable results.
         </p>
       </div>

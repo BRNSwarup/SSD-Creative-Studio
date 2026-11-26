@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ServiceItem, PortfolioItem, ClientItem, InquiryItem, SiteContent } from '../types';
-import { saveServices, savePortfolio, saveClients, saveSiteContent, getInquiries } from '../lib/supabase';
-import { X, Lock, Plus, Trash2, RefreshCw, Layers, Image, Users, MessageSquare, LogOut, Check, Sliders, Sparkles, Phone, Award, FileText, CheckCircle2 } from 'lucide-react';
+import { saveServices, savePortfolio, saveClients, saveSiteContent, getInquiries, checkSupabaseConnection, SupabaseHealth } from '../lib/supabase';
+import { X, Lock, Plus, Trash2, RefreshCw, Layers, Image, Users, MessageSquare, LogOut, Check, Sliders, Sparkles, Phone, Award, FileText, CheckCircle2, AlertTriangle, Database } from 'lucide-react';
 
 interface AdminModalProps {
   isOpen: boolean;
@@ -64,6 +64,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   });
 
   const [newServiceDeliverable, setNewServiceDeliverable] = useState<{ [serviceId: string]: string }>({});
+  const [dbHealth, setDbHealth] = useState<SupabaseHealth | null>(null);
+  const [syncWarning, setSyncWarning] = useState<string | null>(null);
 
   useEffect(() => {
     setEditableContent(content);
@@ -72,6 +74,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   useEffect(() => {
     if (isAuthenticated) {
       loadInquiriesList();
+      checkSupabaseConnection().then(setDbHealth);
     }
   }, [isAuthenticated]);
 
@@ -98,8 +101,13 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
   // Save General Site Content
   const handleSaveSection = async (sectionName: string) => {
-    await saveSiteContent(editableContent);
+    const res = await saveSiteContent(editableContent);
     onDataUpdated();
+    if (!res.synced) {
+      setSyncWarning(`Saved locally only — Supabase sync error: ${res.error || 'Run supabase_schema.sql in Supabase SQL Editor'}`);
+    } else {
+      setSyncWarning(null);
+    }
     setSavedSection(sectionName);
     setTimeout(() => setSavedSection(null), 3000);
   };
@@ -124,8 +132,13 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     };
 
     const updated = [projectItem, ...portfolio];
-    await savePortfolio(updated);
+    const res = await savePortfolio(updated);
     onDataUpdated();
+    if (!res.synced) {
+      setSyncWarning(`Saved locally only — Supabase sync error: ${res.error || 'Check Supabase tables'}`);
+    } else {
+      setSyncWarning(null);
+    }
     setNewProject({
       title: '',
       category: 'video',
@@ -136,14 +149,19 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       tags: [],
       featured: true
     });
-    alert('Project published successfully!');
+    alert(res.synced ? 'Project published & synced to Supabase Cloud!' : `Saved locally. Supabase sync warning: ${res.error}`);
   };
 
   // Delete Project
   const handleDeleteProject = async (id: string) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
     const updated = portfolio.filter(p => p.id !== id);
-    await savePortfolio(updated);
+    const res = await savePortfolio(updated, id);
+    if (!res.synced) {
+      setSyncWarning(`Deleted locally only — Supabase sync error: ${res.error}`);
+    } else {
+      setSyncWarning(null);
+    }
     onDataUpdated();
   };
 
@@ -162,17 +180,27 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     };
 
     const updated = [clientItem, ...clients];
-    await saveClients(updated);
+    const res = await saveClients(updated);
     onDataUpdated();
+    if (!res.synced) {
+      setSyncWarning(`Saved locally only — Supabase sync error: ${res.error}`);
+    } else {
+      setSyncWarning(null);
+    }
     setNewClient({ name: '', industry: '', testimonial: '', author: '', role: '' });
-    alert('New client partner added successfully!');
+    alert(res.synced ? 'New client partner added & synced to Supabase Cloud!' : `Saved locally. Supabase sync warning: ${res.error}`);
   };
 
   // Delete Client
   const handleDeleteClient = async (id: string) => {
     if (!confirm('Remove this client?')) return;
     const updated = clients.filter(c => c.id !== id);
-    await saveClients(updated);
+    const res = await saveClients(updated, id);
+    if (!res.synced) {
+      setSyncWarning(`Deleted locally only — Supabase sync error: ${res.error}`);
+    } else {
+      setSyncWarning(null);
+    }
     onDataUpdated();
   };
 
@@ -191,7 +219,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       return s;
     });
 
-    await saveServices(updatedServices);
+    const res = await saveServices(updatedServices);
+    if (!res.synced) {
+      setSyncWarning(`Saved locally only — Supabase sync error: ${res.error}`);
+    } else {
+      setSyncWarning(null);
+    }
     onDataUpdated();
     setNewServiceDeliverable(prev => ({ ...prev, [serviceId]: '' }));
   };
@@ -206,7 +239,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       }
       return s;
     });
-    await saveServices(updatedServices);
+    const res = await saveServices(updatedServices);
+    if (!res.synced) {
+      setSyncWarning(`Saved locally only — Supabase sync error: ${res.error}`);
+    } else {
+      setSyncWarning(null);
+    }
     onDataUpdated();
   };
 
@@ -224,8 +262,19 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               <div className="text-base font-black text-black font-display flex items-center gap-2">
                 <span>SSD STUDIO DIRECTOR CONSOLE</span>
                 {isAuthenticated && (
-                  <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-brand-green/20 text-brand-green-dark border border-brand-green/30">
-                    ONLINE
+                  <span
+                    className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1 ${
+                      dbHealth?.connected
+                        ? 'bg-brand-green/20 text-brand-green-dark border-brand-green/30'
+                        : 'bg-amber-100 text-amber-800 border-amber-300'
+                    }`}
+                  >
+                    <Database className="w-3 h-3" />
+                    {dbHealth === null
+                      ? 'CHECKING DB...'
+                      : dbHealth.connected
+                      ? 'SUPABASE LIVE'
+                      : 'DB SETUP NEEDED'}
                   </span>
                 )}
               </div>
@@ -376,6 +425,29 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
             {/* Right Main Panel */}
             <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+              {((dbHealth && !dbHealth.connected) || syncWarning) && (
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3 text-xs text-amber-900">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-1 flex-1">
+                    <div className="font-bold">
+                      {dbHealth && !dbHealth.connected
+                        ? `Supabase Tables Missing (${dbHealth.missingTables.join(', ') || 'Check connection'})`
+                        : 'Cloud Sync Notice'}
+                    </div>
+                    <p className="text-amber-800 leading-relaxed">
+                      {syncWarning ||
+                        'Changes are currently saving to this browser only. Run supabase_schema.sql in your Supabase Dashboard -> SQL Editor to enable instant cross-browser sync.'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => checkSupabaseConnection().then(setDbHealth)}
+                    className="px-3 py-1.5 rounded-lg bg-amber-200/70 hover:bg-amber-300 font-bold text-[11px] cursor-pointer shrink-0"
+                  >
+                    Re-check
+                  </button>
+                </div>
+              )}
               
               {/* CATEGORY 1: SITE CONTENT & HIGHLIGHTS */}
               {activeCategory === 'content' && (

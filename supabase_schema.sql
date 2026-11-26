@@ -1,6 +1,6 @@
 -- =======================================================
 -- SSD CREATIVE STUDIO - SUPABASE DATABASE SCHEMA
--- Run this in your Supabase SQL Editor if setting up fresh
+-- Run this once in your Supabase Dashboard -> SQL Editor
 -- =======================================================
 
 -- 1. Inquiries Table (Contact Form Leads)
@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS public.services (
   description TEXT,
   items JSONB DEFAULT '[]'::jsonb,
   icon TEXT,
-  visual_type TEXT
+  visual_type TEXT,
+  image TEXT
 );
 
 -- 3. Portfolio Projects Table
@@ -41,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.portfolio (
   tags JSONB DEFAULT '[]'::jsonb,
   featured BOOLEAN DEFAULT false,
   aspect_ratio TEXT DEFAULT 'landscape',
+  external_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -48,6 +50,8 @@ CREATE TABLE IF NOT EXISTS public.portfolio (
 CREATE TABLE IF NOT EXISTS public.clients (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  logo_text TEXT,
+  logo_url TEXT,
   industry TEXT,
   testimonial TEXT,
   author TEXT,
@@ -90,12 +94,31 @@ CREATE TABLE IF NOT EXISTS public.site_content (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable Row Level Security (RLS) with Public Read & Insert policies
+-- Add missing columns safely if tables already existed
+ALTER TABLE public.services ADD COLUMN IF NOT EXISTS image TEXT;
+ALTER TABLE public.portfolio ADD COLUMN IF NOT EXISTS external_url TEXT;
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS logo_text TEXT;
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS logo_url TEXT;
+
+-- Enable Row Level Security (RLS)
 ALTER TABLE public.inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.portfolio ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.site_content ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies safely before recreating
+DROP POLICY IF EXISTS "Public Read Services" ON public.services;
+DROP POLICY IF EXISTS "Public Read Portfolio" ON public.portfolio;
+DROP POLICY IF EXISTS "Public Read Clients" ON public.clients;
+DROP POLICY IF EXISTS "Public Read Content" ON public.site_content;
+DROP POLICY IF EXISTS "Public Insert Inquiries" ON public.inquiries;
+DROP POLICY IF EXISTS "Public Read Inquiries" ON public.inquiries;
+DROP POLICY IF EXISTS "Allow All Services" ON public.services;
+DROP POLICY IF EXISTS "Allow All Portfolio" ON public.portfolio;
+DROP POLICY IF EXISTS "Allow All Clients" ON public.clients;
+DROP POLICY IF EXISTS "Allow All Content" ON public.site_content;
+DROP POLICY IF EXISTS "Allow All Inquiries" ON public.inquiries;
 
 -- Allow public read access to all published content
 CREATE POLICY "Public Read Services" ON public.services FOR SELECT USING (true);
@@ -107,10 +130,44 @@ CREATE POLICY "Public Read Content" ON public.site_content FOR SELECT USING (tru
 CREATE POLICY "Public Insert Inquiries" ON public.inquiries FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public Read Inquiries" ON public.inquiries FOR SELECT USING (true);
 
--- Allow full access with anon key (or service key) for site administration
-CREATE POLICY "Allow All Services" ON public.services FOR ALL USING (true);
-CREATE POLICY "Allow All Portfolio" ON public.portfolio FOR ALL USING (true);
-CREATE POLICY "Allow All Clients" ON public.clients FOR ALL USING (true);
-CREATE POLICY "Allow All Content" ON public.site_content FOR ALL USING (true);
-CREATE POLICY "Allow All Inquiries" ON public.inquiries FOR ALL USING (true);
+-- Allow full access for site administration
+CREATE POLICY "Allow All Services" ON public.services FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All Portfolio" ON public.portfolio FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All Clients" ON public.clients FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All Content" ON public.site_content FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow All Inquiries" ON public.inquiries FOR ALL USING (true) WITH CHECK (true);
 
+-- Enable Realtime instant sync across all browsers & devices
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'site_content'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.site_content;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'services'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.services;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'portfolio'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.portfolio;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'clients'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.clients;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'inquiries'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.inquiries;
+  END IF;
+END $$;

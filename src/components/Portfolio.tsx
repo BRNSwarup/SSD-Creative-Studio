@@ -34,31 +34,31 @@ export const Portfolio: React.FC<PortfolioProps> = memo(({ portfolio, onOpenVide
       <div className="max-w-7xl mx-auto space-y-14">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-black/[0.08] pb-8">
           <div className="space-y-4 max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-black/[0.04] border border-black/[0.08] text-xs uppercase tracking-wider text-black font-bold">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FAFAFA] border border-black/[0.08] text-[11px] uppercase tracking-[0.16em] text-[#0A0A0A] font-bold">
               <span className="w-2 h-2 rounded-full bg-brand-green"></span>
-              <span>FEATURED WORK</span>
+              <span>04 // FEATURED WORK</span>
             </div>
-            <h2 className="font-display text-4xl sm:text-5xl font-black text-black">
+            <h2 className="font-display text-4xl sm:text-5xl font-black tracking-[-0.03em] text-[#0A0A0A] leading-[1.05]">
               CURATED <br />
-              <span className="text-brand-green text-glow-green">STUDIO PORTFOLIO.</span>
+              <span className="text-brand-green">STUDIO PORTFOLIO.</span>
             </h2>
-            <p className="text-neutral-600 text-base sm:text-lg">
+            <p className="text-neutral-600 text-base sm:text-lg leading-relaxed">
               Cinematic visuals, viral campaigns, bespoke brand identities, and high-performance digital products engineered for global brands.
             </p>
           </div>
 
           {/* Dynamic Filter Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 bg-neutral-100 p-1.5 rounded-2xl border border-black/[0.06]">
+          <div className="flex flex-wrap items-center gap-1.5 bg-[#F4F4F5] p-1.5 rounded-2xl border border-black/[0.06]">
             {FILTERS.map((f) => (
               <button
                 key={f.id}
                 onClick={() => setSelectedFilter(f.id)}
-                className={`text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-xl transition-colors duration-150 cursor-pointer ${
+                className={`text-[11px] font-bold uppercase tracking-[0.12em] px-4 py-2 rounded-xl transition-all duration-150 cursor-pointer ${
                   selectedFilter === f.id
-                    ? 'bg-black text-white shadow-sm'
-                    : 'text-neutral-600 hover:text-black hover:bg-black/[0.03]'
+                    ? 'bg-[#0A0A0A] text-white shadow-sm'
+                    : 'text-neutral-600 hover:text-[#0A0A0A] hover:bg-white/70'
                 }`}
               >
                 {f.label}
